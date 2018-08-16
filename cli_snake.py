@@ -212,8 +212,27 @@ def brain(game_field,snake,fruit,direction, event):
     head_y = head[1]
     gf_x = game_field[0]
     gf_y = game_field[1]
+    
+    fx = fruit[0]
+    fy = fruit[1]
+    
     ev = event 
-    if direction == RIGHT and head_x >= gf_x - 2:
+    if head_x < fx and direction == LEFT:
+        if head_y > fy: 
+            ev = UP
+        elif head_y < fy:
+            ev=DOWN    
+    elif head_x < fx and direction == DOWN:
+        ev = RIGHT
+    elif head_x > fx and direction == RIGHT:
+        if head_y > fy: 
+            ev = UP
+        elif head_y < fy:
+            ev=DOWN    
+    elif head_x > fx and direction == DOWN:
+        ev = LEFT
+    
+    elif direction == RIGHT and head_x >= gf_x - 2:
         if head_y >=1 and head_y <= gf_y/2: 
             ev = DOWN
         elif head_y <= gf_y - 2 and head_y >= gf_y/2: 
