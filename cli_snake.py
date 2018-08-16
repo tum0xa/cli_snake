@@ -282,7 +282,7 @@ def main():
                 if head_x == fruit_x and head_y == fruit_y: 
                     snake = snake_eat(snake,fruit)
                     fruit = fruit_new(GAME_FIELD)
-                    new_fruit = 0
+                    new_fruit = FRUIT_SHOW_TIME
                     
                 if new_fruit == fruit_time:
                     fruit = fruit_new(GAME_FIELD)
@@ -307,15 +307,16 @@ def main():
                     game_state = GAME_END         
             
         elif game_state == GAME_END:
-            message = 'Game over! Your result is ' + 
-            str(len(snake)*10-30) + 
+            message = 'Game over! Your result is ' + \
+            str(len(snake)*10-30) + \
             '. Press "Enter" to start new game or "Esc" to exit.'
             if event == GAME_START:
-                del new_game, head, head_x, head_y, snake, fruit, 
+                del new_game, head, head_x, head_y, snake, fruit, \
                     fruit_x, fruit_y, game_state, direction
                 new_game = game_init(GAME_FIELD)
                 
                 snake = new_game[SNAKE]
+                old_snake = len(snake)
                 head = snake[0]
                 fruit = new_game[FRUIT]
                 fruit_x = fruit[0]
