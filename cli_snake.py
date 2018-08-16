@@ -7,10 +7,17 @@ import keyboard
 
 DEBUG = False
 
-GAME_FIELD = (40,20)
-BORDER_SYM = '#'
+# Settings
+
+FPS = 10
+GAME_FIELD = (80,25)
+
+#Symbols
+BORDER_SYM = '█'
 FIELD_SYM = ' '
-SNAKE_SYM = 'o'
+SNAKE_SYM = '▒'
+HEAD_SYM = '░'
+FRUIT_SYM = '▓'
 
 
 
@@ -112,7 +119,7 @@ def snake_eat(snake,fruit_pos):
 
 def draw(snake, head_pos, fruit_pos, game_field_dimensions=(80,25),
     game_field_sym=' ', snake_sym='*', fruit_sym='F', border_sym='#', 
-    game_message=''):
+    head_sym='@',game_message=''):
 
     
     game_field_width = game_field_dimensions[0]
@@ -142,7 +149,7 @@ def draw(snake, head_pos, fruit_pos, game_field_dimensions=(80,25),
             
             # Draw snake's head ##################
                 elif j==head_x and i==head_y:
-                    print('@', end='')    
+                    print(head_sym, end='')    
             ##### End draw snake's head###########
             
             # Draw snake's body ##################
@@ -284,10 +291,12 @@ def main():
                 if check_self_colision(snake):
                     game_state = GAME_END
                     
-                if direction == RIGHT and head_x+1 == fruit_x and head_y == fruit_y \
-                    or direction == LEFT and head_x-1 == fruit_x and head_y == fruit_y \
-                    or direction == UP and head_y-1 == fruit_y and head_x == fruit_x \
-                    or direction == DOWN and head_y+1 == fruit_y and head_x == fruit_x:
+                # ~ if direction == RIGHT and head_x+1 == fruit_x and head_y == fruit_y \
+                    # ~ or direction == LEFT and head_x-1 == fruit_x and head_y == fruit_y \
+                    # ~ or direction == UP and head_y-1 == fruit_y and head_x == fruit_x \
+                    # ~ or direction == DOWN and head_y+1 == fruit_y and head_x == fruit_x:
+                if head_x == fruit_x and head_y == fruit_y:
+                    
                     snake = snake_eat(snake,fruit)
                     fruit = fruit_new(GAME_FIELD)
                     new_fruit = 0
@@ -336,13 +345,14 @@ def main():
 
         clear()
         draw(snake, head, fruit, game_field_dimensions=GAME_FIELD, game_message=message,
-        border_sym=BORDER_SYM, snake_sym=SNAKE_SYM, game_field_sym=FIELD_SYM)
+        border_sym=BORDER_SYM, snake_sym=SNAKE_SYM, game_field_sym=FIELD_SYM, 
+        fruit_sym=FRUIT_SYM, head_sym=HEAD_SYM)
         time_end = time.time()
         delta = time_end - time_start
-        print(delta)
-        print(0.05-delta)
-        print(old_delta)
-        time.sleep(abs(0.05-delta))   
+        # ~ print(delta)
+        # ~ print(1/FPS-delta)
+        # ~ print(old_delta)
+        time.sleep(abs(1/FPS-delta))   
         time_end = time.time()
         old_delta = time_end - time_start
         
