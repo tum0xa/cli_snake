@@ -204,7 +204,38 @@ def kb_handler():
     else:
         event = GAME_PLAY
     return event
-   
+
+
+def brain(game_field,snake,fruit,direction, event):
+    head = snake[0]
+    head_x = head[0]
+    head_y = head[1]
+    gf_x = game_field[0]
+    gf_y = game_field[1]
+    ev = event 
+    if direction == RIGHT and head_x >= gf_x - 2:
+        if head_y >=1 and head_y <= gf_y/2: 
+            ev = DOWN
+        elif head_y <= gf_y - 2 and head_y >= gf_y/2: 
+            ev = UP
+    elif direction == LEFT and head_x <= 1:
+        if head_y >=1 and head_y <= gf_y/2: 
+            ev = DOWN
+        elif head_y <= gf_y - 2 and head_y >= gf_y/2: 
+            ev = UP
+    elif direction == DOWN and head_y >= gf_y - 2:
+        if head_x >=1 and head_x <= gf_x/2: 
+            ev = RIGHT
+        elif head_x <= gf_x - 2 and head_x >= gf_x/2: 
+            ev = LEFT
+    elif direction == UP and head_y <= 1:
+        if head_x >=1 and head_x <= gf_x/2: 
+            ev = RIGHT
+        elif head_x <= gf_x - 2 and head_x >= gf_x/2: 
+            ev = LEFT
+    
+    return ev
+
     
 def main():
     """ Main cycle """
@@ -221,13 +252,14 @@ def main():
     old_snake = len(snake)
     game_state = new_game[GAME_STATE]
     direction = new_game[DIRECTION]
-
+    
     message = 'Welcome to the Snake! Press Enter to start new game!'
     
     while True:
         new_fruit+=1
         time_start = time.time()
         event = kb_handler() # Keyboard handler
+        event = brain(GAME_FIELD,snake,fruit,direction,event)
         fruit_x = fruit[0]
         fruit_y = fruit[1]
         if game_state == GAME_NEW:
