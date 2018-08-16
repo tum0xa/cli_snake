@@ -4,26 +4,39 @@ import random
 
 import keyboard
 
-global x, y, direction, state, fx,fy, snake
 
-gameField_width = 40
-gameField_height = 20
+DEBUG = False
 
-DEBUG = True
+GAME_FIELD = (40,20)
+BORDER_SYM = '#'
+FIELD_SYM = ' '
+SNAKE_SYM = 'o'
 
-# Directions
 
-LEFT = 0
-RIGHT = 1
-UP = 2
-DOWN = 3
+
+SNAKE = 0
+FRUIT = 1
+HEAD = 1
+GAME_STATE = 2
+DIRECTION = 3
+
+
+# EVENTS
+
+LEFT = 10
+RIGHT = 11
+UP = 12
+DOWN = 13
 
 ############
 
 # Game state
-
-PLAY = 0
-END = 1
+GAME_NEW = 0
+GAME_PLAY = 1
+GAME_END = 2
+GAME_START = 3
+GAME_PAUSE = 4
+GAME_EXIT = 5
 
 ############
 
@@ -33,42 +46,41 @@ if os.name == 'posix':
 elif os.name == 'nt':
     clear = lambda: os.system('cls')
     
-def game_init():
-    global x, y, direction, state, fx,fy, snake
+def game_init(game_field_dimensions=(80,25)):
     
-    x = 4
-    y = 1
+    game_field_width = game_field_dimensions[0]
+    game_field_height = game_field_dimensions[1]
     
     direction = RIGHT
-    state = PLAY
+    state = GAME_NEW
 
-    fruit()
+    fruit = fruit_new(game_field_dimensions)
     
-    snake = [[3,2],[2,1],[1,1]]
+    snake = [[3,int(game_field_height/2)],[2,int(game_field_height/2)],[1,int(game_field_height/2)]]
+    return (snake, fruit, state, direction)
     
 
 
-def check_point(pointx,pointy):
-    global snake
-    point = [pointx,pointy]
-    if point in snake:
+def check_point(point,points):
+    
+    if point in points:
         return True
     else:
         return False
         
-def check_colision():
-    global snake,state,head
+def check_self_colision(snake):
     
-    for point in snake:
-        if snake.count(head) > 1:
-            state = END
+    head = snake[0]
+    if snake.count(head) > 1:
+        return True
+    else:
+        return False
         
         
      
         
-def snake_move(direction):
-    global snake, x, y, state,head
-    
+def snake_move(snake, direction):
+        
     head = snake[0].copy()
 
     if direction == RIGHT:
@@ -79,73 +91,120 @@ def snake_move(direction):
         head[1] = head[1] - 1
     elif direction == DOWN:
         head[1] = head[1] + 1
-
+    else:
+        return snake
+        
     snake.insert(0,head)
     snake.pop()
-    x = head[0]
-    y = head[1]
+    
+    return snake
+    
 
 
-def snake_eat():
-    global snake,fx,fy
-    snake.insert(0,[fx,fy])
+def snake_eat(snake,fruit_pos):
+    
+    fruit_x = fruit_pos[0]
+    fruit_y = fruit_pos[1]
+    
+    snake.insert(0,[fruit_x,fruit_y])
+    
+    return snake
 
-def draw(message):
-    global x,y, state,fx, fy,head
-    for i in range(gameField_height):
-        for j in range(gameField_width):
-            if i == 0 or i == gameField_height-1:
-                if j == gameField_width-1:
-                    print('#')
-                
-                else:
-                    print('#', end='')
-            else:
-                
-                if j == gameField_width-1:
-                    print('#')
-                elif j == 0:
-                    print('#', end='')
-                elif j==x and i==y:
+def draw(snake, head_pos, fruit_pos, game_field_dimensions=(80,25),
+    game_field_sym=' ', snake_sym='*', fruit_sym='F', border_sym='#', 
+    game_message=''):
+
+    
+    game_field_width = game_field_dimensions[0]
+    game_field_height = game_field_dimensions[1]
+    
+    head_x = head_pos[0]
+    head_y = head_pos[1]
+    
+    fruit_x = fruit_pos[0]
+    fruit_y = fruit_pos[1]
+    
+    
+    for i in range(game_field_height):
+        for j in range(game_field_width):
+            # Draw the game field borders ########
+            if i == 0 or i == game_field_height-1: # Vertical borders
+                if j == game_field_width-1: # Right border
+                    print(border_sym)
+                else:                       # Left border
+                    print(border_sym, end='')
+            else:                                  # Horizontal borders
+                if j == game_field_width-1: # Bottom border
+                    print(border_sym)
+                elif j == 0:                # Top border
+                    print(border_sym, end='')
+            ##### End draw borders################
+            
+            # Draw snake's head ##################
+                elif j==head_x and i==head_y:
                     print('@', end='')    
-                elif check_point(j,i):
-                    print('0',end='')
-                elif j==fx and i==fy:
-                    print('F', end='')                 
+            ##### End draw snake's head###########
+            
+            # Draw snake's body ##################
+                elif check_point([j,i], snake):
+                    print(snake_sym,end='')
+            ##### End draw snake's body ##########
+            
+            # Draw fruit #########################        
+                elif j==fruit_x and i==fruit_y:
+                    print(fruit_sym, end='')      
+            ##### End draw fruit #################
+            
+            # Fill the game field ################
                 else:
-                    print(' ', end='')
-    if message:
-        print(message)
+                    print(game_field_sym, end='')
+            
+            ##### End fill the game field ########
+                    
+    # Draw the game message
+    if game_message:
+        print(game_message)
         
         
     if DEBUG == True:
-        print('x =', x)
-        print('y =', y)
-        print('fx =', fx)
-        print('fy =', fy)
+        
+        print('head x =', head_x)
+        print('head y =', head_y)
+        print('fruit x =', fruit_x)
+        print('fruit y =', fruit_y)
         print(snake)  
         
 
-def fruit():
-    global fx,fy
-    fx=random.randint(1,gameField_width-2)
-    fy=random.randint(1,gameField_height-2)
+def fruit_new(game_field_dimensions=(80,25)):
+    
+    game_field_width = game_field_dimensions[0]
+    game_field_height = game_field_dimensions[1]
+    
+    fruit_x=random.randint(1,game_field_width-2)
+    fruit_y=random.randint(1,game_field_height-2)
+    
+    return (fruit_x,fruit_y)
         
         
 def kb_handler():
-    global direction
+    
     if keyboard.is_pressed('Esc'):
-        exit()
-    elif keyboard.is_pressed('Up') and not direction == DOWN:
-        direction = UP
-    elif keyboard.is_pressed('Down') and not direction == UP:
-        direction = DOWN
-    elif keyboard.is_pressed('Left') and not direction == RIGHT:
-        direction = LEFT
-    elif keyboard.is_pressed('Right') and not direction == LEFT:
-        direction = RIGHT
+        event = GAME_EXIT
+    elif keyboard.is_pressed('Up'):
+        event = UP
+    elif keyboard.is_pressed('Down'):
+        event = DOWN
+    elif keyboard.is_pressed('Left'):
+        event = LEFT
+    elif keyboard.is_pressed('Right'):
+        event = RIGHT
     elif keyboard.is_pressed('Enter'):
-        game_init()
+        event = GAME_START
+    elif keyboard.is_pressed('Space'):
+        event = GAME_PAUSE
+    else:
+        event = GAME_PLAY
+    return event
         
     
 def exit_game():
@@ -153,46 +212,139 @@ def exit_game():
     
     
 def main():
-   
-    global direction,state,x,y,fx,fy
+    new_fruit = 0 
+    new_game = game_init(GAME_FIELD)
+    game_field_width = GAME_FIELD[0]
+    game_field_height = GAME_FIELD[1]
+    fruit_time = 200
+    snake = new_game[SNAKE]
+    # ~ print(snake)
+    head = snake[0]
+    fruit = new_game[FRUIT]
+    old_snake = len(snake)
+    game_state = new_game[GAME_STATE]
+    direction = new_game[DIRECTION]
+    # ~ time.sleep(5)
+    message = 'Welcome to the Snake! Press Enter to start new game!'
     
-    game_init()
-    old_length=len(snake)
-    
-    message=''
     while True:
-        kb_handler() # Keyboard handler
+        new_fruit+=1
+        time_start = time.time()
+        event = kb_handler() # Keyboard handler
+        fruit_x = fruit[0]
+        fruit_y = fruit[1]
+        if game_state == GAME_NEW:
+            
+            if event == GAME_START:
+                game_state = GAME_PLAY
+            elif event == GAME_EXIT:
+                game_state = GAME_EXIT
         
-        if state == PLAY:
-            snake_move(direction)
-            check_colision()
-    
-        if x > gameField_width-2:
-            x = gameField_width-2
-            state = END
-        elif x < 1:
-            x = 1
-            state = END
-        if y > gameField_height-2:
-            y = gameField_height-2
-            state = END
-        elif y < 1:
-            y = 1
-            state = END 
+        elif game_state == GAME_PAUSE:
+            
+            if event == GAME_START:
+                game_state = GAME_PLAY
+                
+            elif event == GAME_EXIT:
+                game_state = GAME_EXIT
+                
+            elif event == GAME_PAUSE:
+                game_state = GAME_PLAY
+                event = GAME_START
+            
         
-        if state == END:
-            message = 'Game over! Press "Enter" to start new game or "Esc" to exit.'
-           
-        
-        if fx == x and fy == y:
-            snake_eat()
-            fruit()
+        elif game_state == GAME_PLAY:
+            message='Ponts: '+str(len(snake)*10-30)
+            if event == UP and not direction == DOWN:
+                direction = UP
+            elif event == DOWN  and not direction == UP:
+                direction = DOWN
+            elif event == LEFT  and not direction == RIGHT:
+                direction = LEFT
+            elif event == RIGHT  and not direction == LEFT:
+                direction = RIGHT
+            
+                
+            if event == GAME_PAUSE:
+                game_state = GAME_PAUSE
+                message = 'Game paused'
+                
+            elif event == GAME_EXIT:
+                game_state = GAME_EXIT
+                message = 'Thank you for a game!'
+            else:
+                            
+                snake = snake_move(snake,direction)
+                
+                head = snake[0]
+                head_x = head[0]
+                head_y = head[1]
+                
+                if check_self_colision(snake):
+                    game_state = GAME_END
+                    
+                if direction == RIGHT and head_x+1 == fruit_x and head_y == fruit_y \
+                    or direction == LEFT and head_x-1 == fruit_x and head_y == fruit_y \
+                    or direction == UP and head_y-1 == fruit_y and head_x == fruit_x \
+                    or direction == DOWN and head_y+1 == fruit_y and head_x == fruit_x:
+                    snake = snake_eat(snake,fruit)
+                    fruit = fruit_new(GAME_FIELD)
+                    new_fruit = 0
+                    
+                if new_fruit == fruit_time:
+                    fruit = fruit_new(GAME_FIELD)
+                    
+                if len(snake) == old_snake+3:
+                    fruit_time -= 20
+                    old_snake = len(snake)
+                    if fruit_time == 20:
+                        fruit_time = 20
+                
+                elif head_x > game_field_width-2:
+                    head_x = game_field_width-2
+                    game_state = GAME_END
+                elif head_x < 1:
+                    head_x = 1
+                    game_state = GAME_END
+                if head_y > game_field_height-2:
+                    head_y = game_field_height-2
+                    game_state = GAME_END
+                elif head_y < 1:
+                    head_y = 1
+                    game_state = GAME_END         
+            
+        elif game_state == GAME_END:
+            message = 'Game over! Your result is ' + str(len(snake)*10-30) + '. Press "Enter" to start new game or "Esc" to exit.'
+            if event == GAME_START:
+                del new_game, head, head_x, head_y, snake, fruit, fruit_x, fruit_y, game_state, direction
+                new_game = game_init(GAME_FIELD)
+                
+                snake = new_game[SNAKE]
+                head = snake[0]
+                fruit = new_game[FRUIT]
+                fruit_x = fruit[0]
+                fruit_y = fruit[1]
+                
+                direction = new_game[DIRECTION]
+                game_state = GAME_PLAY   
+                
+            if event == GAME_EXIT:
+                game_state = GAME_EXIT    
+        elif game_state == GAME_EXIT:
+            exit()
 
         clear()
-        draw(message)
-              
+        draw(snake, head, fruit, game_field_dimensions=GAME_FIELD, game_message=message,
+        border_sym=BORDER_SYM, snake_sym=SNAKE_SYM, game_field_sym=FIELD_SYM)
+        time_end = time.time()
+        delta = time_end - time_start
+        print(delta*1000)
+        
         time.sleep(0.1)   
+        
+        
 
 
 if __name__ == '__main__':
     main()
+    
