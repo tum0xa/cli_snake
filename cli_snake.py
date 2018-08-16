@@ -13,7 +13,6 @@ FPS = 10
 GAME_FIELD = (79,24)
 FRUIT_SHOW_TIME = 10 # in seconds
 
-
 #Symbols
 BORDER_SYM = '█'
 FIELD_SYM = ' '
@@ -21,14 +20,11 @@ SNAKE_SYM = '▒'
 HEAD_SYM = '░'
 FRUIT_SYM = '▓'
 
-
-
 SNAKE = 0
 FRUIT = 1
 HEAD = 1
 GAME_STATE = 2
 DIRECTION = 3
-
 
 # EVENTS
 
@@ -37,9 +33,8 @@ RIGHT = 11
 UP = 12
 DOWN = 13
 
-############
-
 # Game state
+
 GAME_NEW = 0
 GAME_PLAY = 1
 GAME_END = 2
@@ -48,7 +43,6 @@ GAME_PAUSE = 4
 GAME_EXIT = 5
 
 ############
-
 
 if os.name == 'posix':
     clear = lambda: os.system('clear')
@@ -66,7 +60,9 @@ def game_init(game_field_dimensions=GAME_FIELD):
 
     fruit = fruit_new(game_field_dimensions)
     
-    snake = [[3,int(game_field_height/2)],[2,int(game_field_height/2)],[1,int(game_field_height/2)]]
+    # start snake position
+    snake = [[3,int(game_field_height/2)],[2,int(game_field_height/2)],
+            [1,int(game_field_height/2)]]
     return (snake, fruit, state, direction)
 
 
@@ -112,9 +108,7 @@ def snake_eat(snake,fruit_pos):
     
     fruit_x = fruit_pos[0]
     fruit_y = fruit_pos[1]
-    
     snake.insert(0,[fruit_x,fruit_y])
-    
     return snake
 
 def draw(snake, head_pos, fruit_pos, game_field_dimensions=GAME_FIELD,
@@ -172,9 +166,7 @@ def draw(snake, head_pos, fruit_pos, game_field_dimensions=GAME_FIELD,
     if game_message:
         print(game_message)
         
-        
     if DEBUG == True:
-        
         print('head x =', head_x)
         print('head y =', head_y)
         print('fruit x =', fruit_x)
@@ -277,8 +269,7 @@ def main():
             elif event == GAME_EXIT:
                 game_state = GAME_EXIT
                 message = 'Thank you for a game!'
-            else:
-                            
+            else:                           
                 snake = snake_move(snake,direction)
                 
                 head = snake[0]
@@ -288,12 +279,7 @@ def main():
                 if check_self_colision(snake):
                     game_state = GAME_END
                     
-                # ~ if direction == RIGHT and head_x+1 == fruit_x and head_y == fruit_y \
-                    # ~ or direction == LEFT and head_x-1 == fruit_x and head_y == fruit_y \
-                    # ~ or direction == UP and head_y-1 == fruit_y and head_x == fruit_x \
-                    # ~ or direction == DOWN and head_y+1 == fruit_y and head_x == fruit_x:
-                if head_x == fruit_x and head_y == fruit_y:
-                    
+                if head_x == fruit_x and head_y == fruit_y: 
                     snake = snake_eat(snake,fruit)
                     fruit = fruit_new(GAME_FIELD)
                     new_fruit = 0
@@ -321,9 +307,12 @@ def main():
                     game_state = GAME_END         
             
         elif game_state == GAME_END:
-            message = 'Game over! Your result is ' + str(len(snake)*10-30) + '. Press "Enter" to start new game or "Esc" to exit.'
+            message = 'Game over! Your result is ' + 
+            str(len(snake)*10-30) + 
+            '. Press "Enter" to start new game or "Esc" to exit.'
             if event == GAME_START:
-                del new_game, head, head_x, head_y, snake, fruit, fruit_x, fruit_y, game_state, direction
+                del new_game, head, head_x, head_y, snake, fruit, 
+                    fruit_x, fruit_y, game_state, direction
                 new_game = game_init(GAME_FIELD)
                 
                 snake = new_game[SNAKE]
@@ -341,18 +330,18 @@ def main():
             exit()
 
         clear()
-        draw(snake, head, fruit, game_field_dimensions=GAME_FIELD, game_message=message,
-        border_sym=BORDER_SYM, snake_sym=SNAKE_SYM, game_field_sym=FIELD_SYM, 
-        fruit_sym=FRUIT_SYM, head_sym=HEAD_SYM)
+        draw(snake, head, fruit, game_field_dimensions=GAME_FIELD, 
+            game_message=message, border_sym=BORDER_SYM, 
+            snake_sym=SNAKE_SYM, game_field_sym=FIELD_SYM, 
+            fruit_sym=FRUIT_SYM, head_sym=HEAD_SYM)
+            
+        # Cycle's Time control    
         time_end = time.time()
         delta = time_end - time_start
-        # ~ print(delta)
-        # ~ print(1/FPS-delta)
-        # ~ print(old_delta)
         time.sleep(abs(1/FPS-delta))   
         time_end = time.time()
         old_delta = time_end - time_start
-        
+        #################################
 
 
 if __name__ == '__main__':
