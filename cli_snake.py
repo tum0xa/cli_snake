@@ -212,6 +212,7 @@ def exit_game():
     
     
 def main():
+    old_delta = 0
     new_fruit = 0 
     new_game = game_init(GAME_FIELD)
     game_field_width = GAME_FIELD[0]
@@ -224,7 +225,7 @@ def main():
     old_snake = len(snake)
     game_state = new_game[GAME_STATE]
     direction = new_game[DIRECTION]
-    # ~ time.sleep(5)
+
     message = 'Welcome to the Snake! Press Enter to start new game!'
     
     while True:
@@ -338,10 +339,12 @@ def main():
         border_sym=BORDER_SYM, snake_sym=SNAKE_SYM, game_field_sym=FIELD_SYM)
         time_end = time.time()
         delta = time_end - time_start
-        print(delta*1000)
-        
-        time.sleep(0.1)   
-        
+        print(delta)
+        print(0.05-delta)
+        print(old_delta)
+        time.sleep(abs(0.05-delta))   
+        time_end = time.time()
+        old_delta = time_end - time_start
         
 
 
