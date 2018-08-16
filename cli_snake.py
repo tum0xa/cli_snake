@@ -10,7 +10,9 @@ DEBUG = False
 # Settings
 
 FPS = 10
-GAME_FIELD = (80,25)
+GAME_FIELD = (79,24)
+FRUIT_SHOW_TIME = 10 # in seconds
+
 
 #Symbols
 BORDER_SYM = '█'
@@ -53,8 +55,9 @@ if os.name == 'posix':
 elif os.name == 'nt':
     clear = lambda: os.system('cls')
     
-def game_init(game_field_dimensions=(80,25)):
     
+def game_init(game_field_dimensions=GAME_FIELD):
+    """ Game initialisation """
     game_field_width = game_field_dimensions[0]
     game_field_height = game_field_dimensions[1]
     
@@ -65,29 +68,27 @@ def game_init(game_field_dimensions=(80,25)):
     
     snake = [[3,int(game_field_height/2)],[2,int(game_field_height/2)],[1,int(game_field_height/2)]]
     return (snake, fruit, state, direction)
-    
 
 
 def check_point(point,points):
-    
+    """ Check whether points belong to a list of points """
     if point in points:
         return True
     else:
         return False
         
+        
 def check_self_colision(snake):
-    
+    """ Intersection check """
     head = snake[0]
     if snake.count(head) > 1:
         return True
     else:
         return False
-        
-        
      
         
 def snake_move(snake, direction):
-        
+    """ Move snake to the direction at one step """
     head = snake[0].copy()
 
     if direction == RIGHT:
@@ -105,7 +106,6 @@ def snake_move(snake, direction):
     snake.pop()
     
     return snake
-    
 
 
 def snake_eat(snake,fruit_pos):
@@ -117,10 +117,11 @@ def snake_eat(snake,fruit_pos):
     
     return snake
 
-def draw(snake, head_pos, fruit_pos, game_field_dimensions=(80,25),
+def draw(snake, head_pos, fruit_pos, game_field_dimensions=GAME_FIELD,
     game_field_sym=' ', snake_sym='*', fruit_sym='F', border_sym='#', 
     head_sym='@',game_message=''):
-
+    """ Draw snake with head and fruit at the game field by symbols
+    that passed in argumets"""
     
     game_field_width = game_field_dimensions[0]
     game_field_height = game_field_dimensions[1]
@@ -130,7 +131,6 @@ def draw(snake, head_pos, fruit_pos, game_field_dimensions=(80,25),
     
     fruit_x = fruit_pos[0]
     fruit_y = fruit_pos[1]
-    
     
     for i in range(game_field_height):
         for j in range(game_field_width):
@@ -182,8 +182,8 @@ def draw(snake, head_pos, fruit_pos, game_field_dimensions=(80,25),
         print(snake)  
         
 
-def fruit_new(game_field_dimensions=(80,25)):
-    
+def fruit_new(game_field_dimensions=GAME_FIELD):
+    """ Fruit generator """
     game_field_width = game_field_dimensions[0]
     game_field_height = game_field_dimensions[1]
     
@@ -194,7 +194,7 @@ def fruit_new(game_field_dimensions=(80,25)):
         
         
 def kb_handler():
-    
+    """ Keyboard handler """
     if keyboard.is_pressed('Esc'):
         event = GAME_EXIT
     elif keyboard.is_pressed('Up'):
@@ -212,21 +212,18 @@ def kb_handler():
     else:
         event = GAME_PLAY
     return event
-        
-    
-def exit_game():
-    exit()
-    
+   
     
 def main():
-    old_delta = 0
+    """ Main cycle """
+    
+    old_delta = 0 
     new_fruit = 0 
     new_game = game_init(GAME_FIELD)
     game_field_width = GAME_FIELD[0]
     game_field_height = GAME_FIELD[1]
-    fruit_time = 200
+    fruit_time = FRUIT_SHOW_TIME*FPS 
     snake = new_game[SNAKE]
-    # ~ print(snake)
     head = snake[0]
     fruit = new_game[FRUIT]
     old_snake = len(snake)
@@ -305,10 +302,10 @@ def main():
                     fruit = fruit_new(GAME_FIELD)
                     
                 if len(snake) == old_snake+3:
-                    fruit_time -= 20
+                    fruit_time -= 1*FPS
                     old_snake = len(snake)
-                    if fruit_time == 20:
-                        fruit_time = 20
+                    if fruit_time <= 1*FPS:
+                        fruit_time = 1*FPS
                 
                 elif head_x > game_field_width-2:
                     head_x = game_field_width-2
