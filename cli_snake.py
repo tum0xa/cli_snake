@@ -331,7 +331,7 @@ def main():
                 fruit = new_game[FRUIT]
                 fruit_x = fruit[0]
                 fruit_y = fruit[1]
-                
+                fruit_time = FRUIT_SHOW_TIME
                 direction = new_game[DIRECTION]
                 game_state = GAME_PLAY   
                 
