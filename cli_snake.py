@@ -6,12 +6,14 @@ import keyboard
 
 
 DEBUG = False
+AI = True
 
 # Settings
 
 FPS = 10
-GAME_FIELD = (79,24)
+GAME_FIELD = (40,20)
 FRUIT_SHOW_TIME = 10 # in seconds
+FRUIT_SHOW_TIME_MIN = 3
 
 #Symbols
 BORDER_SYM = '█'
@@ -166,12 +168,15 @@ def draw(snake, head_pos, fruit_pos, game_field_dimensions=GAME_FIELD,
     if game_message:
         print(game_message)
         
-    if DEBUG == True:
-        print('head x =', head_x)
-        print('head y =', head_y)
-        print('fruit x =', fruit_x)
-        print('fruit y =', fruit_y)
-        print(snake)  
+    # ~ if DEBUG == True:
+        # ~ print('head x =', head_x)
+        # ~ print('head y =', head_y)
+        
+        # ~ print('fruit x =', fruit_x)
+        # ~ print('fruit y =', fruit_y)
+        
+            
+        # ~ print(snake)  
         
 
 def fruit_new(game_field_dimensions=GAME_FIELD):
@@ -206,10 +211,17 @@ def kb_handler():
     return event
 
 
+
+        
+    
+
 def brain(game_field,snake,fruit,direction, event):
     head = snake[0]
     head_x = head[0]
     head_y = head[1]
+    tail = snake[len(snake)-1]
+    tail_x = tail[0]
+    tail_y = tail[1]
     gf_x = game_field[0]
     gf_y = game_field[1]
     
@@ -217,20 +229,69 @@ def brain(game_field,snake,fruit,direction, event):
     fy = fruit[1]
     
     ev = event 
-    if head_x < fx and direction == LEFT:
-        if head_y > fy: 
+    if fx > head_x and direction == LEFT:
+        if head_y > fy and [head_x, head_y-1] not in snake: 
             ev = UP
-        elif head_y < fy:
-            ev=DOWN    
-    elif head_x < fx and direction == DOWN:
-        ev = RIGHT
-    elif head_x > fx and direction == RIGHT:
-        if head_y > fy: 
+        elif head_y < fy and [head_x, head_y+1] not in snake:
+            ev=DOWN   
+    if fx < head_x and direction == RIGHT:
+        if head_y > fy and [head_x, head_y-1] not in snake: 
             ev = UP
-        elif head_y < fy:
+        elif head_y < fy and [head_x, head_y+1] not in snake:
+            ev=DOWN  
+    
+    if fy > head_y and direction == UP:
+        if head_x > fx and [head_x-1, head_y] not in snake: 
+            ev = LEFT
+        elif head_x < fx and [head_x+1, head_y] not in snake:
+            ev=RIGHT  
+    if fy < head_y and direction == DOWN:
+        if head_x > fx and [head_x-1, head_y] not in snake: 
+            ev = LEFT
+        elif head_x < fx and [head_x+1, head_y] not in snake:
+            ev=RIGHT   
+        
+    if head_x == fx and (direction == LEFT or direction == RIGHT):
+        if head_y > fy and [head_x, head_y-1] not in snake: 
+            ev = UP
+        elif head_y < fy and [head_x, head_y+1] not in snake:
             ev=DOWN    
-    elif head_x > fx and direction == DOWN:
-        ev = LEFT
+    
+    elif head_y == fy and (direction == DOWN or direction == UP):
+        if head_x > fx and [head_x-1, head_y] not in snake: 
+            ev = LEFT
+        elif head_x < fx and [head_x+1, head_y] not in snake:
+            ev=RIGHT   
+    
+    if direction==LEFT and [head_x-1, head_y] in snake:
+        if tail_y > head_y:
+            ev=DOWN
+        elif tail_y < head_y:
+            ev=UP
+        elif tail_y == head_y:
+            ev=UP
+    elif direction==RIGHT and [head_x+1, head_y] in snake:
+        if tail_y > head_y:
+            ev=DOWN
+        elif tail_y < head_y:
+            ev=UP
+        elif tail_y == head_y:
+            ev=UP
+    elif direction==DOWN and [head_x, head_y+1] in snake:
+        if tail_x > head_x:
+            ev=RIGHT
+        elif tail_x < head_x:
+            ev=LEFT
+        elif tail_x == head_x:
+            ev=LEFT
+    elif direction==UP and [head_x, head_y-1] in snake:
+        if tail_x > head_x:
+            ev=RIGHT
+        elif tail_x < head_x:
+            ev=LEFT
+        elif tail_x == head_x:
+            ev=LEFT
+
     
     elif direction == RIGHT and head_x >= gf_x - 2:
         if head_y >=1 and head_y <= gf_y/2: 
@@ -273,12 +334,13 @@ def main():
     direction = new_game[DIRECTION]
     
     message = 'Welcome to the Snake! Press Enter to start new game!'
-    
+    debug_message=''
     while True:
         new_fruit+=1
         time_start = time.time()
         event = kb_handler() # Keyboard handler
-        event = brain(GAME_FIELD,snake,fruit,direction,event)
+        if AI and game_state == GAME_PLAY:
+            event = brain(GAME_FIELD,snake,fruit,direction,event)
         fruit_x = fruit[0]
         fruit_y = fruit[1]
         if game_state == GAME_NEW:
@@ -337,12 +399,17 @@ def main():
                     
                 if new_fruit == fruit_time:
                     fruit = fruit_new(GAME_FIELD)
+                    new_fruit = FRUIT_SHOW_TIME
+                    
+                if fruit in snake:
+                    fruit = fruit_new(GAME_FIELD)
+                    new_fruit = FRUIT_SHOW_TIME
                     
                 if len(snake) == old_snake+3:
                     fruit_time -= 1*FPS
                     old_snake = len(snake)
-                    if fruit_time <= 1*FPS:
-                        fruit_time = 1*FPS
+                    if fruit_time <= FRUIT_SHOW_TIME_MIN*FPS:
+                        fruit_time = FRUIT_SHOW_TIME_MIN*FPS
                 
                 elif head_x > game_field_width-2:
                     head_x = game_field_width-2
@@ -382,8 +449,14 @@ def main():
             exit()
 
         clear()
+        
+        if DEBUG:
+            debug_message = '\ndirection = ' + str(direction)\
+            +'\nsnake = ' + str(snake)
+            
+            
         draw(snake, head, fruit, game_field_dimensions=GAME_FIELD, 
-            game_message=message, border_sym=BORDER_SYM, 
+            game_message=message+debug_message, border_sym=BORDER_SYM, 
             snake_sym=SNAKE_SYM, game_field_sym=FIELD_SYM, 
             fruit_sym=FRUIT_SYM, head_sym=HEAD_SYM)
             
